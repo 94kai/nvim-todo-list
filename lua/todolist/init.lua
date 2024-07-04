@@ -13,7 +13,7 @@ local function configHighlight()
 		execute("syntax match vimTodoListsTitle '.*󱔲.*'")
 		highlight VimTodoListDone guifg=#FFD700 guibg=NONE 
 		highlight VimTodoListNormal guifg=red guibg=NONE 
-		highlight VimTodoListTitle guifg=green guibg=NONE gui=bold
+		highlight VimTodoListTitle guifg=#598987 guibg=NONE gui=bold
 		highlight link vimTodoListsDone VimTodoListDone
 		highlight link vimTodoListsNormal VimTodoListNormal
 		highlight link vimTodoListsTitle VimTodoListTitle
@@ -61,25 +61,53 @@ local function getTitle()
 end
 local function getDate()
 	local weekDays = {
-		["Sunday"] = "星期日",
-		["Monday"] = "星期一",
-		["Tuesday"] = "星期二",
-		["Wednesday"] = "星期三",
-		["Thursday"] = "星期四",
-		["Friday"] = "星期五",
-		["Saturday"] = "星期六",
+		["0"] = "星期日",
+		["1"] = "星期一",
+		["2"] = "星期二",
+		["3"] = "星期三",
+		["4"] = "星期四",
+		["5"] = "星期五",
+		["6"] = "星期六",
 	}
 
-	-- 获取当前日期信息
-	-- 根据当前日期信息中的“星期几”字段获取中文星期
-	local englishWeekDay = os.date("%A")
+	local englishWeekDay = os.date("%w")
 	local chineseWeekDay = weekDays[englishWeekDay]
 
 	-- 输出中文的星期几
 	return os.date("[%Y-%m-%d " .. chineseWeekDay .. "]")
 end
-function CreateTitleAbove()
-	vim.cmd("normal! O " .. getTitle())
+
+local function getRecentTitle()
+	local curPos = vim.fn.getcurpos(".")[2]
+	local maxPos = vim.fn.getpos("$")[2]
+	for i = curPos, maxPos do
+		if string.find(vim.fn.getline(i), "󱔲") then
+			return i
+		end
+	end
+	return -1
+end
+
+local function findOrCreateRecentTitle()
+	local recentTitleNum = getRecentTitle()
+	local line = vim.fn.getline(recentTitleNum)
+	-- 如果行号是-1，表示没有title，在最后一行创建一个，然后再移动
+	if recentTitleNum == -1 then
+		vim.cmd("$")
+		vim.cmd("normal! o " .. getTitle())
+		return vim.fn.getcurpos()[2]
+	end
+
+	local curTitle = string.gsub(getTitle(), "%-", "%%-")
+	-- 如果这一行是这周的，直接移动到这一行下面
+	if string.find(line, curTitle) then
+		return recentTitleNum
+	else
+		-- 如果这一行不是这周的，表示这周没创建，在它上面创建一个。然后再移动
+		vim.cmd("" .. recentTitleNum)
+		vim.cmd("normal! O " .. getTitle())
+		return vim.fn.getcurpos()[2]
+	end
 end
 function ToggleItem()
 	local itemState = getItemState()
@@ -95,10 +123,13 @@ function ToggleItem()
 	elseif itemState == 2 then
 		-- 切到done
 		local curLine = vim.fn.getline(".")
+		local curLineNum = vim.fn.getcurpos()[2]
 		vim.fn.setline(".", vim.fn.substitute(curLine, "󰄱", "󰄲 " .. getDate(), ""))
-		-- 挪到第一个DONE上
-		local maxLineNum = vim.fn.getpos("$")[1]
-		-- TODO
+		local recentTitleNum = findOrCreateRecentTitle()
+
+		-- 回到之前的位置
+		vim.cmd("" .. curLineNum)
+		vim.cmd("m" .. recentTitleNum)
 	end
 	-- TODO
 end
@@ -116,7 +147,6 @@ local function configKeyMap()
 	vim.keymap.set("n", "j", ":lua GoToNextItem()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", "k", ":lua GoToPreviousItem()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", ";", ":lua ToggleItem()<cr>", { buffer = true, silent = true })
-	vim.keymap.set("n", "t", ":lua CreateTitleAbove()<cr>", { buffer = true, silent = true })
 end
 local function init()
 	setOptions()
