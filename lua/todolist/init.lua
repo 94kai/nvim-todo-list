@@ -131,8 +131,8 @@ function ToggleItem()
 		vim.cmd("" .. curLineNum)
 		vim.cmd("m" .. recentTitleNum)
 	end
-	-- TODO
 end
+
 function GoToNextItem()
 	vim.cmd([[
 		normal! $
@@ -142,8 +142,8 @@ function GoToNextItem()
 	]])
 end
 local function configKeyMap()
-	vim.keymap.set("n", "o", ":lua CreateNewItemBelow()<cr>", { buffer = true, silent = true })
-	vim.keymap.set("n", "O", ":lua CreateNewItemAbove()<cr>", { buffer = true, silent = true })
+	-- vim.keymap.set("n", "o", ":lua CreateNewItemBelow()<cr>", { buffer = true, silent = true })
+	vim.keymap.set("n", "o", ":lua CreateNewItemAbove()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", "j", ":lua GoToNextItem()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", "k", ":lua GoToPreviousItem()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", ";", ":lua ToggleItem()<cr>", { buffer = true, silent = true })
