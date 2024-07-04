@@ -20,7 +20,7 @@
 - o/O在光标上/下创建ToDoList
 - ;完成，并自动将Done的item归类到本周Title下
 # 最佳实践
-- 配置altas，这样需要记录TODO时，直接终端输入todo回车即可进入
+- 配置alias，这样需要记录TODO时，直接终端输入todo回车即可进入
 ```
 alias todo="nvim ~/project/todolist/work.todo.md"
 ```
