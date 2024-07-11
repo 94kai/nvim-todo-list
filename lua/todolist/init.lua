@@ -31,7 +31,7 @@ end
 function GoToPreviousItem()
 	vim.cmd([[
 		normal! 0
-		silent! exec '?󰄱\|󰄲'
+		silent! exec '?󰄱\|󰄲\|'
 		noh
 		normal! 03l
 	]])
@@ -136,14 +136,14 @@ end
 function GoToNextItem()
 	vim.cmd([[
 		normal! $
-		silent! exec '/󰄱\|󰄲'
+		silent! exec '/󰄱\|󰄲\|'
 		noh
 		normal! 03l
 	]])
 end
 local function configKeyMap()
 	-- vim.keymap.set("n", "o", ":lua CreateNewItemBelow()<cr>", { buffer = true, silent = true })
-	vim.keymap.set("n", "o", ":lua CreateNewItemAbove()<cr>", { buffer = true, silent = true })
+	vim.keymap.set("n", "O", ":lua CreateNewItemAbove()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", "j", ":lua GoToNextItem()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", "k", ":lua GoToPreviousItem()<cr>", { buffer = true, silent = true })
 	vim.keymap.set("n", ";", ":lua ToggleItem()<cr>", { buffer = true, silent = true })
@@ -154,6 +154,11 @@ local function init()
 	configKeyMap()
 end
 
+local function changeItem()
+	print("changeItem")
+	local curLine = vim.fn.getline(".")
+	vim.fn.setline(".", vim.fn.substitute(curLine, "^\\(\\s*\\)- ", "\\1 ", ""))
+end
 local M = {}
 function M.setup()
 	local augroup = vim.api.nvim_create_augroup("nvim_todo_list", { clear = true })
@@ -163,6 +168,14 @@ function M.setup()
 		pattern = "*.todo.md",
 		callback = function()
 			init()
+		end,
+	})
+
+	vim.api.nvim_create_autocmd({ "InsertLeave" }, {
+		group = augroup,
+		pattern = "*.todo.md",
+		callback = function()
+			changeItem()
 		end,
 	})
 end

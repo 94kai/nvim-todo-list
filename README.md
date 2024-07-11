@@ -17,7 +17,8 @@
 	- ...
 # 使用
 - nvim打开后缀为todo.md的文件即可
-- o/O在光标上/下创建ToDoList
+- O在光标上创建ToDoList
+- o在光标下添加备注
 - ;完成，并自动将Done的item归类到本周Title下
 # 最佳实践
 - 配置alias，这样需要记录TODO时，直接终端输入todo回车即可进入
